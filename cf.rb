@@ -4,7 +4,8 @@ require 'rubygems'
 require 'json'
 
 class CoverFetcher
-  # TODO(mateusz): Traversing music collection
+  # TODO Commandline args
+  # TODO Traversing music collection dirs
 
   class ResponseError < StandardError; end
 
@@ -36,8 +37,8 @@ class CoverFetcher
     open(url) do |r|
       response = JSON.parse(r.string)
       raise ResponseError.new(response['message']) if response['error']
-      covers = response["album"]["image"]
-      cover_url = covers.find{|c| c["size"] == size}["#text"]
+      covers = response['album']['image']
+      cover_url = covers.find{ |c| c['size'] == size }['#text']
     end
 
     cover_url
