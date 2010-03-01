@@ -31,13 +31,14 @@ class CoverFetcher
           next if file !~ music_file || processed_dirs.include?(dir)
           info = ID3Lib::Tag.new(file)
           artist, album = info.artist, info.album
+          next if !album || album.empty?
           print "=> Fetching cover for `#{album}` by `#{artist}`..."
           fetcher ||= CoverFetcher.new
           Dir.chdir(dir) do
             begin
               cover = fetcher.cover_for(:artist => artist, :title => album)
               puts " OK (`#{cover}`)"
-            rescue ResponseError => e
+            rescue StandardError => e
               " FAILED (#{e.message})"
             end
           end
@@ -60,7 +61,8 @@ class CoverFetcher
   end
 
   def cover_for_album(album, size='large')
-    download(find(album, size))
+    cover_url = find(album, size)
+    download(cover_url) if cover_url && !cover_url.empty?
   end
 
   def cover_for_albums(albums, size='large')
@@ -74,7 +76,7 @@ class CoverFetcher
   def find(album, size='large')
     url = "#{LASTFM_API_URL}?api_key=#{@api_key}&method=album.getInfo"
     url += '&format=json'
-    url += "&artist=#{CGI.escape(album[:artist])}"
+    url += "&artist=#{CGI.escape(album[:artist])}" if album[:artist]
     url += "&album=#{CGI.escape(album[:title])}"
 
     cover_url = nil
@@ -89,8 +91,6 @@ class CoverFetcher
   end
 
   def download(cover_url, as=nil)
-    return nil if cover_url.nil? || cover_url.empty?
-
     file = cover_url.match(/([\w_]+).(\w{3})$/)
     file_name = as || file[1]
     file_format = file[2]
