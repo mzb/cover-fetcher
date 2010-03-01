@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'cover_fetcher'
+
+if ARGV.length > 0
+  CoverFetcher.run(:dir => ARGV[0])
+else
+  puts "Usage: #{__FILE__} dir"
+  exit 1
+end
